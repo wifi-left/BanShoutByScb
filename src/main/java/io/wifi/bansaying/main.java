@@ -76,7 +76,7 @@ public class main implements DedicatedServerModInitializer {
                     .append(Text.literal(content).formatted(Formatting.WHITE));
         } else {
             text = text.append(Text.literal("[SHOUT] ").formatted(Formatting.GOLD))
-                    .append(Text.literal(player.getName().getString()).formatted(Formatting.WHITE))
+                    .append(player.getDisplayName())
                     .append(Text.literal(": ").formatted(Formatting.GRAY))
                     .append(Text.literal(content).formatted(Formatting.WHITE));
         }
