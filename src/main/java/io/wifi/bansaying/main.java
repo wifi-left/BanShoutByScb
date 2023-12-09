@@ -1,7 +1,7 @@
 package io.wifi.bansaying;
 // MyMod.java
 
-import net.fabricmc.api.DedicatedServerModInitializer;
+import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
@@ -24,7 +24,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 
 import static net.minecraft.server.command.CommandManager.argument;
 
-public class main implements DedicatedServerModInitializer {
+public class main implements ModInitializer {
     // 定义一个键绑定
     // ## 0 for nothing; 1 ban other team; 2 ban own team; 3 all banned; 4 ban
     // 命令：/tshout
@@ -84,7 +84,7 @@ public class main implements DedicatedServerModInitializer {
     }
 
     @Override
-    public void onInitializeServer() {
+    public void onInitialize() {
         // 注册命令绑定
         registerCommands();
         ServerLifecycleEvents.SERVER_STARTED.register((server) -> {

@@ -1,9 +1,0 @@
-{
-    "category.togglesprint":"疾行切换",
-    "key.togglesprint.toggle":"疾行切换",
-    "gui.togglesprint.toggle":"疾行模式：%s",
-    "gui.togglesprint.on":"启用",
-    "gui.togglesprint.off":"关闭",
-    "gui.togglesprint.stateon":"自动疾行: 启用"
-
-}

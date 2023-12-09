@@ -14,11 +14,11 @@
   },
 
   "license": "CC0-1.0",
-  "icon": "assets/togglesprinting/icon.png",
+  "icon": "assets/bansaying/icon.png",
 
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
-    "server": [
+    "main": [
       "io.wifi.bansaying.main"
     ]
   },

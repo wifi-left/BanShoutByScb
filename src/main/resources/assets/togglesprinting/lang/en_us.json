@@ -1,8 +1,0 @@
-{
-    "category.togglesprint":"Toggle Sprint",
-    "key.togglesprint.toggle":"Toggle Sprint",
-    "gui.togglesprint.toggle":"Sprint: %s",
-    "gui.togglesprint.on":"ON",
-    "gui.togglesprint.off":"OFF",
-    "gui.togglesprint.stateon":"AUTO-Sprint: ON"
-}
