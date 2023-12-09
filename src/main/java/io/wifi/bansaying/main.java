@@ -114,7 +114,7 @@ public class main implements DedicatedServerModInitializer {
                 return true;
             } else {
                 if (chatType == 3) {
-                    sender.sendMessage(Text.literal("You cannot say right now.").formatted(Formatting.RED));
+                    sender.sendMessage(Text.literal("You cannot say right now. Try command instead: /sshout <Content>").formatted(Formatting.RED));
                     return false;
                 } else if (chatType == 2) {
                     sendMessageToOwnTeam(message, sender, playerTeam);
