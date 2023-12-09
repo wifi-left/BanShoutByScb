@@ -114,8 +114,7 @@ public class main implements DedicatedServerModInitializer {
                 return true;
             } else {
                 if (chatType == 3) {
-                    sender.sendMessage(Text.literal("You cannot say right now. \nTry command instead: /sshout <Content>").formatted(Formatting.RED));
-                    return false;
+                    sender.sendMessage(Text.literal("You cannot speak right now. \nTry command instead: /sshout <Content>").formatted(Formatting.RED));
                 } else if (chatType == 2) {
                     sendMessageToOwnTeam(message, sender, playerTeam);
                 } else if (chatType == 1) {
@@ -126,6 +125,8 @@ public class main implements DedicatedServerModInitializer {
                         sendMessageToOtherTeam(message, sender, playerTeam, team1.getDisplayName());
                     }
 
+                } else if (chatType == 4){
+                    sender.sendMessage(Text.literal("You cannot speak or shout right now.").formatted(Formatting.RED));
                 }
                 return false;
             }
