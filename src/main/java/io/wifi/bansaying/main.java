@@ -141,7 +141,7 @@ public class main implements DedicatedServerModInitializer {
                 .append(sender.getDisplayName()).append(Text.literal(": ").formatted(Formatting.GRAY))
                 .append(((MutableText) message.getContent()).formatted(Formatting.WHITE));
         sender.sendMessage(raw_message.append(Text.literal("\nThis message can't be viewed by your teammates!")
-                .formatted(Formatting.DARK_GRAY).formatted(Formatting.OBFUSCATED)));
+                .formatted(Formatting.DARK_GRAY).formatted(Formatting.ITALIC)));
         sender.getServer().getPlayerManager().getPlayerList().forEach((player) -> {
             if (player.getScoreboardTeam().getName() != playerTeam) {
                 player.sendMessage(raw_message, false);
