@@ -12,6 +12,7 @@ import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.Team;
+import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
@@ -21,6 +22,7 @@ import net.minecraft.util.Formatting;
 import static net.minecraft.server.command.CommandManager.literal;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 
 import static net.minecraft.server.command.CommandManager.argument;
 
@@ -50,7 +52,7 @@ public class main implements ModInitializer {
                         playerTeam = team.getName();
                     }
                     int chatType = player.getScoreboard().getPlayerScore(playerTeam, ModObj).getScore();
-                    if ((chatType | 4) != 0) {
+                    if ((chatType & 4) != 0) {
                         // 禁止 shout
                         source.sendFeedback(
                                 () -> Text.literal("You cannot shout right now.").formatted(Formatting.RED),
@@ -62,6 +64,7 @@ public class main implements ModInitializer {
                 }
                 return 0;
             })));
+
         });
 
     }
@@ -108,16 +111,16 @@ public class main implements ModInitializer {
                 playerTeam = team.getName();
             }
             int chatType = sender.getScoreboard().getPlayerScore(playerTeam, ModObj).getScore();
-            // ## 0 for nothing; 1 ban other team; 2 ban own team; 3 all banned; 4 ban shout
+            // ## 0 for nothing; 1 ban own team; 2 ban other team; 3 all banned; 4 ban shout
 
             if (chatType == 0) {
                 return true;
             } else {
-                if (chatType == 3) {
+                if (chatType == 3 || chatType == 7) {
                     sender.sendMessage(Text.literal("You cannot speak right now. \nTry command instead: /sshout <Content>").formatted(Formatting.RED));
-                } else if (chatType == 2) {
+                } else if (chatType == 2 || chatType == 6) {
                     sendMessageToOwnTeam(message, sender, playerTeam);
-                } else if (chatType == 1) {
+                } else if (chatType == 1 || chatType == 5) {
                     if (team == null)
                         sendMessageToOtherTeam(message, sender, playerTeam, Text.literal("NORMAL"));
                     else {

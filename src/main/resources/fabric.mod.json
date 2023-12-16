@@ -2,9 +2,8 @@
   "schemaVersion": 1,
   "id": "cmd_bansaying_scb",
   "version": "${version}",
-
   "name": "Scoreboard Saying Control",
-  "description": "Disallow players to say by modify scoreboard.\n阻止玩家说话。这可以精确到每个队伍。",
+  "description": "Disallow players to say by modify scoreboard.\\n阻止玩家说话。这可以精确到每个队伍。",
   "authors": [
     "wifi_left"
   ],
