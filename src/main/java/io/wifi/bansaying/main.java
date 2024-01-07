@@ -5,14 +5,11 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
-import net.fabricmc.tinyremapper.extension.mixin.common.Logger;
-import net.fabricmc.tinyremapper.extension.mixin.common.Logger.Level;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.Team;
-import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
@@ -21,9 +18,10 @@ import net.minecraft.util.Formatting;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import static net.minecraft.server.command.CommandManager.argument;
 
 public class main implements ModInitializer {
@@ -31,7 +29,7 @@ public class main implements ModInitializer {
     // ## 0 for nothing; 1 ban other team; 2 ban own team; 3 all banned; 4 ban
     // 命令：/tshout
     public static ScoreboardObjective ModObj = null;
-    Logger LOGGER = new Logger(Level.INFO);
+    public static Logger LOGGER = LoggerFactory.getLogger("MuteByCmd");;
 
     private static void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
@@ -43,15 +41,19 @@ public class main implements ModInitializer {
                 String content = StringArgumentType.getString(ctx, "content");
                 ServerCommandSource source = ctx.getSource();
                 if (source.hasPermissionLevel(2) || source.getPlayer() == null) {
-                    sendChatMessageToAll(source, content);
+                    sendChatMessageToAll(source, content, true);
                 } else {
+
                     ServerPlayerEntity player = source.getPlayer();
                     AbstractTeam team = player.getScoreboardTeam();
                     String playerTeam = "#";
                     if (team != null) {
                         playerTeam = team.getName();
                     }
-                    int chatType = player.getScoreboard().getPlayerScore(playerTeam, ModObj).getScore();
+                    int chatType = player.getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj)
+                            .getScore();
+                    // (playerTeam, ModObj).getScore();
+
                     if ((chatType & 4) != 0) {
                         // 禁止 shout
                         source.sendFeedback(
@@ -59,8 +61,8 @@ public class main implements ModInitializer {
                                 false);
                         return 1;
                     }
-
                     sendChatMessageToAll(source, content);
+
                 }
                 return 0;
             })));
@@ -86,6 +88,23 @@ public class main implements ModInitializer {
         source.getServer().getPlayerManager().broadcast(text, false);
     }
 
+    private static void sendChatMessageToAll(ServerCommandSource source, String content, boolean op) {
+        ServerPlayerEntity player = source.getPlayer();
+        MutableText text = Text.literal("");
+        if (player == null) {
+            text = text.append(Text.literal("[SHOUT][OP] ").formatted(Formatting.GOLD))
+                    .append(Text.literal("CONSOLES").formatted(Formatting.GREEN))
+                    .append(Text.literal(": ").formatted(Formatting.GRAY))
+                    .append(Text.literal(content).formatted(Formatting.WHITE));
+        } else {
+            text = text.append(Text.literal("[SHOUT]" + (op ? "[OP]" : "") + " ").formatted(Formatting.GOLD))
+                    .append(player.getDisplayName())
+                    .append(Text.literal(": ").formatted(Formatting.GRAY))
+                    .append(Text.literal(content).formatted(Formatting.WHITE));
+        }
+        source.getServer().getPlayerManager().broadcast(text, false);
+    }
+
     @Override
     public void onInitialize() {
         // 注册命令绑定
@@ -93,7 +112,8 @@ public class main implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
             try {
                 ModObj = server.getScoreboard().addObjective("BAMBOO_MOD_SAYING", ScoreboardCriterion.DUMMY,
-                        Text.literal("[*MOD: Scoreboard Saying Control]"), ScoreboardCriterion.RenderType.INTEGER);
+                        Text.literal("[*MOD: Scoreboard Saying Control]"), ScoreboardCriterion.RenderType.INTEGER,
+                        false, null);
             } catch (IllegalArgumentException e) {
                 // 已存在
                 ModObj = server.getScoreboard().getNullableObjective("BAMBOO_MOD_SAYING");
@@ -110,25 +130,31 @@ public class main implements ModInitializer {
             if (team != null) {
                 playerTeam = team.getName();
             }
-            int chatType = sender.getScoreboard().getPlayerScore(playerTeam, ModObj).getScore();
+            int chatType = sender.getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj).getScore();
             // ## 0 for nothing; 1 ban own team; 2 ban other team; 3 all banned; 4 ban shout
 
-            if (chatType == 0) {
+            if (chatType == 0 || chatType == 4) {
                 return true;
             } else {
-                if (chatType == 3 || chatType == 7) {
-                    sender.sendMessage(Text.literal("You cannot speak right now. \nTry command instead: /sshout <Content>").formatted(Formatting.RED));
+                if (chatType == 3) {
+                    sender.sendMessage(
+                            Text.literal("You cannot speak right now. \nTry command instead: /sshout <Content>")
+                                    .formatted(Formatting.RED));
                 } else if (chatType == 2 || chatType == 6) {
+                    LOGGER.info("[TEAM_ONLY] " + sender.getDisplayName().getString() + ": " + message.getSignedContent());
                     sendMessageToOwnTeam(message, sender, playerTeam);
                 } else if (chatType == 1 || chatType == 5) {
-                    if (team == null)
+                    if (team == null) {
                         sendMessageToOtherTeam(message, sender, playerTeam, Text.literal("NORMAL"));
-                    else {
+                        LOGGER.info("[IN_TEAM_ONLY] " + sender.getDisplayName().getString() + ": " + message.getSignedContent());
+                    } else {
                         Team team1 = (Team) team;
                         sendMessageToOtherTeam(message, sender, playerTeam, team1.getDisplayName());
+                        LOGGER.info("[OTHER_TEAM_ONLY] " + sender.getDisplayName().getString() + ": " + message.getSignedContent());
+
                     }
 
-                } else if (chatType == 4){
+                } else if (chatType == 7) {
                     sender.sendMessage(Text.literal("You cannot speak or shout right now.").formatted(Formatting.RED));
                 }
                 return false;
@@ -147,7 +173,11 @@ public class main implements ModInitializer {
         sender.sendMessage(raw_message.append(Text.literal("\nThis message can't be viewed by your teammates!")
                 .formatted(Formatting.DARK_GRAY).formatted(Formatting.ITALIC)));
         sender.getServer().getPlayerManager().getPlayerList().forEach((player) -> {
-            if (player.getScoreboardTeam().getName() != playerTeam) {
+            Team scoreTeam = player.getScoreboardTeam();
+            String teamName = "#";
+            if (scoreTeam != null)
+                teamName = player.getScoreboardTeam().getName();
+            if (teamName != playerTeam) {
                 player.sendMessage(raw_message, false);
             }
         });
@@ -159,7 +189,11 @@ public class main implements ModInitializer {
                 .append(sender.getDisplayName()).append(Text.literal(": ").formatted(Formatting.GRAY))
                 .append(((MutableText) message.getContent()).formatted(Formatting.WHITE));
         sender.getServer().getPlayerManager().getPlayerList().forEach((player) -> {
-            if (player.getScoreboardTeam().getName() == playerTeam) {
+            Team scoreTeam = player.getScoreboardTeam();
+            String teamName = "#";
+            if (scoreTeam != null)
+                teamName = player.getScoreboardTeam().getName();
+            if (teamName == playerTeam) {
                 player.sendMessage(raw_message, false);
             }
         });
