@@ -29,7 +29,7 @@ public class main implements ModInitializer {
     // ## 0 for nothing; 1 ban other team; 2 ban own team; 3 all banned; 4 ban
     // 命令：/tshout
     public static ScoreboardObjective ModObj = null;
-    public static Logger LOGGER = LoggerFactory.getLogger("MuteByCmd");;
+    public static Logger LOGGER = LoggerFactory.getLogger("MuteByCmd");
 
     private static void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
@@ -50,8 +50,13 @@ public class main implements ModInitializer {
                     if (team != null) {
                         playerTeam = team.getName();
                     }
-                    int chatType = player.getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj)
-                            .getScore();
+                    int chatType = 0;
+                    try {
+                        chatType = player.getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj)
+                                .getScore();
+                    } catch (Exception e) {
+                        chatType = 0;
+                    }
                     // (playerTeam, ModObj).getScore();
 
                     if ((chatType & 4) != 0) {
@@ -130,7 +135,12 @@ public class main implements ModInitializer {
             if (team != null) {
                 playerTeam = team.getName();
             }
-            int chatType = sender.getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj).getScore();
+            int chatType = 0;
+            try {
+                chatType = sender.getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj).getScore();
+            } catch (Exception e) {
+                chatType = 0;
+            }
             // ## 0 for nothing; 1 ban own team; 2 ban other team; 3 all banned; 4 ban shout
 
             if (chatType == 0 || chatType == 4) {
@@ -141,16 +151,19 @@ public class main implements ModInitializer {
                             Text.literal("You cannot speak right now. \nTry command instead: /sshout <Content>")
                                     .formatted(Formatting.RED));
                 } else if (chatType == 2 || chatType == 6) {
-                    LOGGER.info("[TEAM_ONLY] " + sender.getDisplayName().getString() + ": " + message.getSignedContent());
+                    LOGGER.info(
+                            "[TEAM_ONLY] " + sender.getDisplayName().getString() + ": " + message.getSignedContent());
                     sendMessageToOwnTeam(message, sender, playerTeam);
                 } else if (chatType == 1 || chatType == 5) {
                     if (team == null) {
                         sendMessageToOtherTeam(message, sender, playerTeam, Text.literal("NORMAL"));
-                        LOGGER.info("[IN_TEAM_ONLY] " + sender.getDisplayName().getString() + ": " + message.getSignedContent());
+                        LOGGER.info("[IN_TEAM_ONLY] " + sender.getDisplayName().getString() + ": "
+                                + message.getSignedContent());
                     } else {
                         Team team1 = (Team) team;
                         sendMessageToOtherTeam(message, sender, playerTeam, team1.getDisplayName());
-                        LOGGER.info("[OTHER_TEAM_ONLY] " + sender.getDisplayName().getString() + ": " + message.getSignedContent());
+                        LOGGER.info("[OTHER_TEAM_ONLY] " + sender.getDisplayName().getString() + ": "
+                                + message.getSignedContent());
 
                     }
 
