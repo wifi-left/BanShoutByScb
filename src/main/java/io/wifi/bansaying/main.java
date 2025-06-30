@@ -77,20 +77,7 @@ public class main implements ModInitializer {
     }
 
     private static void sendChatMessageToAll(ServerCommandSource source, String content) {
-        ServerPlayerEntity player = source.getPlayer();
-        MutableText text = Text.literal("");
-        if (player == null) {
-            text = text.append(Text.literal("[SHOUT][OP] ").formatted(Formatting.GOLD))
-                    .append(Text.literal("CONSOLES").formatted(Formatting.GREEN))
-                    .append(Text.literal(": ").formatted(Formatting.GRAY))
-                    .append(Text.literal(content).formatted(Formatting.WHITE));
-        } else {
-            text = text.append(Text.literal("[SHOUT] ").formatted(Formatting.GOLD))
-                    .append(player.getDisplayName())
-                    .append(Text.literal(": ").formatted(Formatting.GRAY))
-                    .append(Text.literal(content).formatted(Formatting.WHITE));
-        }
-        source.getServer().getPlayerManager().broadcast(text, false);
+        sendChatMessageToAll(source,content,false);
     }
 
     private static void sendChatMessageToAll(ServerCommandSource source, String content, boolean op) {
