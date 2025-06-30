@@ -1,5 +1,5 @@
 # Minecraft Command Speech Manager
-This is a plugin which has the same function as [BanShoutByScb (Spigot Plugin)](https://github.com/wifi-left/BanShoutByScb-spigot)
+This is a mod which has the same function as [BanShoutByScb (Spigot Plugin)](https://github.com/wifi-left/BanShoutByScb-spigot)
 
 ## Introduce
 You can edit scoreboard score to manage your server's speech!
