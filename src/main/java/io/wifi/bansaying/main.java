@@ -52,7 +52,7 @@ public class main implements ModInitializer {
                     }
                     int chatType = 0;
                     try {
-                        chatType = player.getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj)
+                        chatType = player.getEntityWorld().getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj)
                                 .getScore();
                     } catch (Exception e) {
                         chatType = 0;
@@ -124,7 +124,7 @@ public class main implements ModInitializer {
             }
             int chatType = 0;
             try {
-                chatType = sender.getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj).getScore();
+                chatType = sender.getEntityWorld().getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj).getScore();
             } catch (Exception e) {
                 chatType = 0;
             }
@@ -172,7 +172,7 @@ public class main implements ModInitializer {
                 .append(((MutableText) message.getContent()).formatted(Formatting.WHITE));
         sender.sendMessage(raw_message.append(Text.literal("\nThis message can't be viewed by your teammates!")
                 .formatted(Formatting.DARK_GRAY).formatted(Formatting.ITALIC)));
-        sender.getServer().getPlayerManager().getPlayerList().forEach((player) -> {
+        sender.getEntityWorld().getServer().getPlayerManager().getPlayerList().forEach((player) -> {
             Team scoreTeam = player.getScoreboardTeam();
             String teamName = "#";
             if (scoreTeam != null)
@@ -188,7 +188,7 @@ public class main implements ModInitializer {
                 .append(Text.literal("[TEAM]").formatted(Formatting.GRAY)).append(Text.literal(" "))
                 .append(sender.getDisplayName()).append(Text.literal(": ").formatted(Formatting.GRAY))
                 .append(((MutableText) message.getContent()).formatted(Formatting.WHITE));
-        sender.getServer().getPlayerManager().getPlayerList().forEach((player) -> {
+        sender.getEntityWorld().getServer().getPlayerManager().getPlayerList().forEach((player) -> {
             Team scoreTeam = player.getScoreboardTeam();
             String teamName = "#";
             if (scoreTeam != null)
