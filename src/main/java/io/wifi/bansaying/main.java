@@ -5,6 +5,8 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
+import net.minecraft.command.permission.Permission;
+import net.minecraft.command.permission.PermissionLevel;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.scoreboard.ScoreboardCriterion;
@@ -28,6 +30,8 @@ public class main implements ModInitializer {
     // 定义一个键绑定
     // ## 0 for nothing; 1 ban other team; 2 ban own team; 3 all banned; 4 ban
     // 命令：/tshout
+    public static Permission perm_2 = new Permission.Level(PermissionLevel.GAMEMASTERS); // 2
+
     public static ScoreboardObjective ModObj = null;
     public static Logger LOGGER = LoggerFactory.getLogger("MuteByCmd");
 
@@ -40,7 +44,7 @@ public class main implements ModInitializer {
             }).then(argument("content", StringArgumentType.greedyString()).executes((ctx) -> {
                 String content = StringArgumentType.getString(ctx, "content");
                 ServerCommandSource source = ctx.getSource();
-                if (source.hasPermissionLevel(2) || source.getPlayer() == null) {
+                if (source.getPermissions().hasPermission(perm_2) || source.getPlayer() == null) {
                     sendChatMessageToAll(source, content, true);
                 } else {
 
@@ -52,7 +56,8 @@ public class main implements ModInitializer {
                     }
                     int chatType = 0;
                     try {
-                        chatType = player.getEntityWorld().getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj)
+                        chatType = player.getEntityWorld().getScoreboard()
+                                .getScore(new MixScoreHolder(playerTeam), ModObj)
                                 .getScore();
                     } catch (Exception e) {
                         chatType = 0;
@@ -77,7 +82,7 @@ public class main implements ModInitializer {
     }
 
     private static void sendChatMessageToAll(ServerCommandSource source, String content) {
-        sendChatMessageToAll(source,content,false);
+        sendChatMessageToAll(source, content, false);
     }
 
     private static void sendChatMessageToAll(ServerCommandSource source, String content, boolean op) {
@@ -124,7 +129,8 @@ public class main implements ModInitializer {
             }
             int chatType = 0;
             try {
-                chatType = sender.getEntityWorld().getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj).getScore();
+                chatType = sender.getEntityWorld().getScoreboard().getScore(new MixScoreHolder(playerTeam), ModObj)
+                        .getScore();
             } catch (Exception e) {
                 chatType = 0;
             }
